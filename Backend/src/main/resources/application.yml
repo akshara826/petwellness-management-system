@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: petwellnessdb
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/petwellnessdb
+    username: root
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 20MB
+      
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: vishwakarmasahil643@gmail.com
+    password: ${MAIL_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+file:
+  upload-dir: C:/petwellness/uploads
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000  
+  
