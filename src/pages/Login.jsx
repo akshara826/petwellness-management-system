@@ -21,8 +21,6 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [changePasswordRequired, setChangePasswordRequired] = useState(false);
 
   const [loadingAction, setLoadingAction] = useState("");
   const [error, setError] = useState("");
@@ -43,37 +41,12 @@ function Login() {
       }
 
       if (payload.changePasswordRequired) {
-        setChangePasswordRequired(true);
-        setSuccess("Login successful. Set a new password to continue.");
+        setSuccess("Login successful. Redirecting to set a new password.");
+        navigate("/set-password");
       } else {
-        setSuccess("Login successful.");
-        navigate("/");
+        setSuccess("Login successful. Redirecting to dashboard.");
+        navigate("/dashboard");
       }
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoadingAction("");
-    }
-  };
-
-  const handleSetPassword = async (event) => {
-    event.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!newPassword) {
-      setError("New password is required.");
-      return;
-    }
-
-    setLoadingAction("setPassword");
-
-    try {
-      const response = await API.post("/auth/set-password", { newPassword });
-      const message = typeof response.data === "string" ? response.data : "Password set successfully";
-      setSuccess(message);
-      setChangePasswordRequired(false);
-      navigate("/");
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -91,52 +64,31 @@ function Login() {
         {error ? <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-700">{error}</p> : null}
         {success ? <p className="rounded-lg bg-green-100 px-4 py-2 text-sm text-green-700">{success}</p> : null}
 
-        {!changePasswordRequired ? (
-          <form className="grid gap-3" onSubmit={handleLogin}>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2"
-              required
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-sky-700 px-4 py-2 font-semibold text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-              disabled={loadingAction === "login"}
-            >
-              {loadingAction === "login" ? "Logging in..." : "Login"}
-            </button>
-          </form>
-        ) : (
-          <form className="grid gap-3" onSubmit={handleSetPassword}>
-            <h2 className="text-lg font-semibold">Set New Password</h2>
-            <input
-              type="password"
-              placeholder="New Password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2"
-              required
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-              disabled={loadingAction === "setPassword"}
-            >
-              {loadingAction === "setPassword" ? "Saving..." : "Set Password"}
-            </button>
-          </form>
-        )}
+        <form className="grid gap-3" onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2"
+            required
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-sky-700 px-4 py-2 font-semibold text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            disabled={loadingAction === "login"}
+          >
+            {loadingAction === "login" ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
         <p className="text-sm text-slate-600">
           Need an account? <Link to="/register" className="font-semibold text-sky-700">Register here</Link>

@@ -33,7 +33,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String servletPath = request.getServletPath();
-        return HttpMethod.OPTIONS.matches(request.getMethod()) || servletPath.startsWith("/api/auth/");
+        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+            return true;
+        }
+
+        // Skip JWT filter for public auth endpoints, but NOT for set-password
+        if (servletPath.startsWith("/api/auth/")) {
+            return !"/api/auth/set-password".equals(servletPath);
+        }
+
+        return false;
     }
 
     @Override
@@ -72,6 +81,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                             SecurityContextHolder.getContext()
                                     .setAuthentication(authToken);
+                        } else {
+                            // Log warning if user not found (for debugging)
+                            // This shouldn't happen if registration worked correctly
+                            System.err.println("WARNING: JWT token contains email '" + email + "' but user not found in database");
                         }
                     }
                 }

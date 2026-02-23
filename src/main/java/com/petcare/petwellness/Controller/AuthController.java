@@ -53,6 +53,7 @@ public class AuthController {
         return ResponseEntity.ok("OTP verified successfully");
     }
 
+  
     @Operation(
             summary = "Complete profile registration",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -64,14 +65,16 @@ public class AuthController {
             )
     )
     @PostMapping(value = {"/complete-profile", "/registration"}, consumes = "multipart/form-data")
-    public ResponseEntity<String> completeProfile(
+    public ResponseEntity<LoginResponseDto> completeProfile(
             @Valid @ModelAttribute ProfileCompletionRequestDto request
     ) {
-        registrationService.completeProfile(request, request.getIdProof(), request.getProfileImage());
-
-        return ResponseEntity.ok(
-                "Profile completed successfully. Await admin approval."
+        LoginResponseDto response = registrationService.completeProfile(
+                request,
+                request.getIdProof(),
+                request.getProfileImage()
         );
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")

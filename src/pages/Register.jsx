@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api/api";
 
 const initialForm = {
@@ -45,6 +45,8 @@ function isPastDate(value) {
 }
 
 function Register() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -170,9 +172,12 @@ function Register() {
 
     try {
       const response = await API.post("/auth/registration", formData);
-      const message = typeof response.data === "string"
-        ? response.data
-        : "Profile completed successfully. Await admin approval.";
+      const payload = response?.data;
+      const message =
+        typeof payload === "string"
+          ? payload
+          : payload?.message || "Profile completed successfully. Await admin approval.";
+
       setSuccess(message);
       setForm(initialForm);
       setOtp("");
@@ -181,6 +186,11 @@ function Register() {
       setOtpSent(false);
       setOtpVerified(false);
       setEmail("");
+
+      if (payload && typeof payload === "object" && payload.token) {
+        localStorage.setItem("token", payload.token);
+        navigate("/set-password");
+      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
