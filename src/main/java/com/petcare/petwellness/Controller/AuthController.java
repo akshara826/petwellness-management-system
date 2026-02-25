@@ -64,15 +64,17 @@ public class AuthController {
                     )
             )
     )
-    @PostMapping(value = "/registration", consumes = "multipart/form-data")
-    public ResponseEntity<String> completeProfile(
+    @PostMapping(value = {"/complete-profile", "/registration"}, consumes = "multipart/form-data")
+    public ResponseEntity<LoginResponseDto> completeProfile(
             @Valid @ModelAttribute ProfileCompletionRequestDto request
     ) {
-        registrationService.completeProfile(request, request.getIdProof(), request.getProfileImage());
-
-        return ResponseEntity.ok(
-                "Profile completed successfully. Await admin approval."
+        LoginResponseDto response = registrationService.completeProfile(
+                request,
+                request.getIdProof(),
+                request.getProfileImage()
         );
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")

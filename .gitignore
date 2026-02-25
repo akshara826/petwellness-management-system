@@ -38,3 +38,5 @@ secrets.properties
 .env
 .env.*
 backup/
+# Frontend dependencies
+node_modules/

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const navLinks = [
   { href: "#hero", label: "Home" },
   { href: "#features", label: "Features" },
   { href: "#about", label: "About" },
   { href: "#contact", label: "Contact" },
-  { href: "#login", label: "Login" },
+  { href: "/login", label: "Login" },
 ];
 
 function App() {
@@ -52,22 +53,32 @@ function App() {
               {/* Desktop nav */}
               <div className="hidden items-center gap-8 md:flex">
                 <div className="flex items-center gap-6 text-sm font-medium">
-                  {navLinks.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      className="text-slate-500 transition hover:text-slate-900"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
+                  {navLinks.map((link) =>
+                    link.href.startsWith("/") ? (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        className="text-slate-500 transition hover:text-slate-900"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        className="text-slate-500 transition hover:text-slate-900"
+                      >
+                        {link.label}
+                      </a>
+                    )
+                  )}
                 </div>
-                <a
-                  href="#contact"
+                <Link
+                  to="/register"
                   className="rounded-full bg-sky-700 px-4 py-1.5 text-sm font-medium text-white shadow-lg shadow-sky-700/40 transition hover:bg-sky-800"
                 >
                   Register
-                </a>
+                </Link>
               </div>
 
               {/* Mobile button */}
@@ -105,23 +116,34 @@ function App() {
             {mobileOpen && (
               <div className="border-t border-slate-100 bg-white/95 px-5 pb-4 pt-2 md:hidden">
                 <div className="flex flex-col gap-3 text-sm font-medium">
-                  {navLinks.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      className="text-slate-600"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                  <a
-                    href="#contact"
+                  {navLinks.map((link) =>
+                    link.href.startsWith("/") ? (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        className="text-slate-600"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        className="text-slate-600"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        {link.label}
+                      </a>
+                    )
+                  )}
+                  <Link
+                    to="/register"
                     className="mt-2 rounded-full bg-sky-700 px-4 py-1.5 text-center text-sm font-medium text-white shadow-lg shadow-sky-700/40"
                     onClick={() => setMobileOpen(false)}
                   >
                     Register
-                  </a>
+                  </Link>
                 </div>
               </div>
             )}
@@ -143,8 +165,8 @@ function App() {
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4">
-                  <a
-                    href="#features"
+                  <Link
+                    to="/register"
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-400 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-400/50 transition hover:bg-emerald-500"
                   >
                     Get Started
@@ -161,7 +183,7 @@ function App() {
                         d="M9 5h10M19 5v10M19 5L5 19"
                       />
                     </svg>
-                  </a>
+                  </Link>
                 </div>
               </div>
 
