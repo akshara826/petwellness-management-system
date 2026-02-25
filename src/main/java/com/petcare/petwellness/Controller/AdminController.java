@@ -2,6 +2,7 @@ package com.petcare.petwellness.Controller;
 
 import com.petcare.petwellness.DTO.Request.AdminCreateOwnerRequestDto;
 import com.petcare.petwellness.DTO.Request.AdminRejectUserRequestDto;
+import com.petcare.petwellness.DTO.Response.AdminUserProfileResponseDto;
 import com.petcare.petwellness.DTO.Response.ApprovedUserResponseDto;
 import com.petcare.petwellness.DTO.Response.PendingUserResponseDto;
 import com.petcare.petwellness.Service.AdminService;
@@ -38,6 +39,11 @@ public class AdminController {
     @GetMapping("/approved-users")
     public ResponseEntity<List<ApprovedUserResponseDto>> getApprovedUsers() {
         return ResponseEntity.ok(adminService.getApprovedUsers());
+    }
+
+    @GetMapping("/users/{userId}/profile")
+    public ResponseEntity<AdminUserProfileResponseDto> getUserProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(adminService.getUserProfile(userId));
     }
 
     @PostMapping("/approve/{userId}")

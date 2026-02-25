@@ -1,6 +1,7 @@
 package com.petcare.petwellness.Service.ServiceImp;
 
 import com.petcare.petwellness.DTO.Request.AdminCreateOwnerRequestDto;
+import com.petcare.petwellness.DTO.Response.AdminUserProfileResponseDto;
 import com.petcare.petwellness.DTO.Response.ApprovedUserResponseDto;
 import com.petcare.petwellness.DTO.Response.PendingUserResponseDto;
 import com.petcare.petwellness.Domain.Entity.Address;
@@ -80,6 +81,40 @@ public class AdminServiceImp implements AdminService {
                         user.getEmail()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public AdminUserProfileResponseDto getUserProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Personal info not found for user"));
+
+        Address address = addressRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found for user"));
+
+        return new AdminUserProfileResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getFirstName(),
+                personalInfo.getPhoneNumber(),
+                personalInfo.getGender(),
+                personalInfo.getHighestQualification(),
+                personalInfo.getOccupation(),
+                personalInfo.getFatherName(),
+                personalInfo.getMotherName(),
+                personalInfo.getDateOfBirth(),
+                address.getStreet(),
+                address.getCity(),
+                address.getState(),
+                address.getPincode(),
+                user.getProfileImagePath(),
+                user.getIdProofType(),
+                user.getIdProofPath(),
+                user.getCreatedAt()
+        );
     }
 
     

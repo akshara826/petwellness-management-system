@@ -39,7 +39,9 @@ public class SecurityConfig {
                                 "/api/auth/send-otp",
                                 "/api/auth/verify-otp",
                                 "/api/auth/registration",
-                                "/api/auth/login"
+                                "/api/auth/login",
+                                "/api/auth/forgot-password/send-otp",
+                                "/api/auth/forgot-password/reset"
                         ).permitAll()
                         .requestMatchers("/api/auth/set-password").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
