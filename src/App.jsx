@@ -2,7 +2,9 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
+import Dashboard from "./pages/Dashboard";
 import Marketplace from "./pages/Marketplace";
+import MyPets from "./pages/MyPets";
 import Register from "./pages/Register";
 import SetPassword from "./pages/SetPassword";
 
@@ -14,6 +16,8 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/set-password" element={<SetPassword />} />
       <Route path="/dashboard" element={<AdminDashboard />} />
+      <Route path="/user-dashboard" element={<Dashboard />} />
+      <Route path="/pets" element={<MyPets />} />
       <Route path="/marketplace" element={<Marketplace />} />
     </Routes>
   );

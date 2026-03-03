@@ -16,6 +16,53 @@ function getErrorMessage(error) {
   return error?.message || "Request failed";
 }
 
+function getRoleFromToken(token) {
+  if (!token || typeof token !== "string") {
+    return "";
+  }
+
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) {
+      return "";
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(normalized);
+    const payload = JSON.parse(json);
+
+    return typeof payload?.role === "string" ? payload.role.toUpperCase() : "";
+  } catch {
+    return "";
+  }
+}
+
+function getNameFromToken(token) {
+  if (!token || typeof token !== "string") {
+    return "";
+  }
+
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) {
+      return "";
+    }
+
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(normalized);
+    const payload = JSON.parse(json);
+
+    const candidates = [payload?.fullName, payload?.name, payload?.firstName, payload?.username, payload?.sub];
+    const raw = candidates.find((value) => typeof value === "string" && value.trim());
+    if (!raw) return "";
+
+    const clean = raw.trim();
+    return clean.includes("@") ? clean.split("@")[0] : clean;
+  } catch {
+    return "";
+  }
+}
+
 function Login() {
   const navigate = useNavigate();
 
@@ -35,17 +82,25 @@ function Login() {
     try {
       const response = await API.post("/auth/login", { email, password });
       const payload = response?.data || {};
+      const token = payload?.token || "";
+      const role = getRoleFromToken(token);
+      const tokenName = getNameFromToken(token);
 
-      if (payload.token) {
-        localStorage.setItem("token", payload.token);
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+      if (tokenName) {
+        localStorage.setItem("userName", tokenName);
+      } else if (email) {
+        localStorage.setItem("userName", email.split("@")[0]);
       }
 
       if (payload.changePasswordRequired) {
         setSuccess("Login successful. Redirecting to set a new password.");
         navigate("/set-password");
       } else {
-        setSuccess("Login successful. Redirecting to dashboard.");
-        navigate("/dashboard");
+        setSuccess("Login successful. Navigating to your dashboard...");
+        navigate(role === "ADMIN" ? "/dashboard" : "/user-dashboard");
       }
     } catch (err) {
       setError(getErrorMessage(err));
