@@ -86,6 +86,20 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/forgot-password/send-otp")
+    public ResponseEntity<String> sendForgotPasswordOtp(
+            @Valid @RequestBody SendOtpRequestDto request) {
+        loginService.sendForgotPasswordOtp(request);
+        return ResponseEntity.ok("OTP sent successfully");
+    }
+
+    @PostMapping("/forgot-password/reset")
+    public ResponseEntity<String> resetForgotPassword(
+            @Valid @RequestBody ForgotPasswordResetRequestDto request) {
+        loginService.resetForgotPassword(request);
+        return ResponseEntity.ok("Password reset successfully");
+    }
+
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/set-password")
     public ResponseEntity<String> setPassword(

@@ -2,6 +2,7 @@ package com.petcare.petwellness.Controller;
 
 import com.petcare.petwellness.DTO.Request.AdminCreateOwnerRequestDto;
 import com.petcare.petwellness.DTO.Request.AdminRejectUserRequestDto;
+import com.petcare.petwellness.DTO.Response.AdminUserProfileResponseDto;
 import com.petcare.petwellness.DTO.Response.ApprovedUserResponseDto;
 import com.petcare.petwellness.DTO.Response.PendingUserResponseDto;
 import com.petcare.petwellness.Service.AdminService;
@@ -31,13 +32,22 @@ public class AdminController {
     }
 
     @GetMapping("/pending-users")
-    public ResponseEntity<List<PendingUserResponseDto>> getPendingUsers() {
-        return ResponseEntity.ok(adminService.getPendingUsers());
+    public ResponseEntity<List<PendingUserResponseDto>> getPendingUsers(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(adminService.getPendingUsers(offset, limit));
     }
 
     @GetMapping("/approved-users")
-    public ResponseEntity<List<ApprovedUserResponseDto>> getApprovedUsers() {
-        return ResponseEntity.ok(adminService.getApprovedUsers());
+    public ResponseEntity<List<ApprovedUserResponseDto>> getApprovedUsers(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(adminService.getApprovedUsers(offset, limit));
+    }
+
+    @GetMapping("/users/{userId}/profile")
+    public ResponseEntity<AdminUserProfileResponseDto> getUserProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(adminService.getUserProfile(userId));
     }
 
     @PostMapping("/approve/{userId}")

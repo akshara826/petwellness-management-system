@@ -2,6 +2,8 @@ package com.petcare.petwellness.Exceptions;
 
 import com.petcare.petwellness.DTO.Response.ErrorResponseDto;
 import com.petcare.petwellness.Exceptions.CustomException.BadRequestException;
+import com.petcare.petwellness.Exceptions.CustomException.PetLimitExceededException;
+import com.petcare.petwellness.Exceptions.CustomException.PdfGenerationException;
 import com.petcare.petwellness.Exceptions.CustomException.ResourceNotFoundException;
 import com.petcare.petwellness.Exceptions.CustomException.UnauthorizedException;
 
@@ -56,6 +58,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(PetLimitExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handlePetLimitExceeded(PetLimitExceededException ex) {
+        log.warn("Pet limit exceeded: {}", ex.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponseDto(ex.getMessage(), 400),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidation(MethodArgumentNotValidException ex) {
         log.warn("Validation failed: {}", ex.getMessage());
@@ -92,7 +104,8 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @SuppressWarnings("deprecation")
+@ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponseDto> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
         log.warn("Upload size exceeded: {}", ex.getMessage());
 
@@ -128,6 +141,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorResponseDto("Required multipart field is missing: " + ex.getRequestPartName(), 400),
                 HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(PdfGenerationException.class)
+    public ResponseEntity<ErrorResponseDto> handlePdfGeneration(PdfGenerationException ex) {
+        String rootCause = ex.getCause() != null && ex.getCause().getMessage() != null
+                ? ex.getCause().getMessage()
+                : ex.getMessage();
+        log.error("PDF generation failed at stage {}: {}", ex.getStage(), rootCause, ex);
+
+        return new ResponseEntity<>(
+                new ErrorResponseDto(
+                        "PDF generation failed at stage " + ex.getStage() + ": " + rootCause,
+                        500
+                ),
+                HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
 

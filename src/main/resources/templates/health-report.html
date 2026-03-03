@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Pet Health Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 32px; color: #222; }
+        h1 { margin-bottom: 8px; }
+        h2 { margin-top: 24px; margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        td, th { border: 1px solid #ccc; padding: 8px; }
+        th { background: #f2f2f2; text-align: left; }
+    </style>
+</head>
+<body>
+<h1>Pet Health Report</h1>
+<p>Generated on <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm')}"></span></p>
+
+<h2>Pet Details</h2>
+<table>
+    <tr><th>ID</th><td th:text="${report.pet.id}"></td></tr>
+    <tr><th>Name</th><td th:text="${report.pet.name}"></td></tr>
+    <tr><th>Species</th><td th:text="${report.pet.species}"></td></tr>
+    <tr><th>Breed</th><td th:text="${report.pet.breed}"></td></tr>
+    <tr><th>Gender</th><td th:text="${report.pet.gender}"></td></tr>
+    <tr><th>Age</th><td th:text="${report.pet.age} + ' years'"></td></tr>
+</table>
+
+<h2>Latest Medical History</h2>
+<table>
+    <tr><th>Visit Date</th><td th:text="${#temporals.format(report.medicalHistory.visitDate, 'yyyy-MM-dd')}"></td></tr>
+    <tr><th>Doctor</th><td th:text="${report.medicalHistory.doctorName}"></td></tr>
+    <tr><th>Clinic</th><td th:text="${report.medicalHistory.clinicName}"></td></tr>
+    <tr><th>Symptoms</th><td th:text="${report.medicalHistory.symptoms}"></td></tr>
+    <tr><th>Diagnosis</th><td th:text="${report.medicalHistory.diagnosis}"></td></tr>
+    <tr><th>Treatment</th><td th:text="${report.medicalHistory.treatment}"></td></tr>
+    <tr><th>Medication</th><td th:text="${report.medicalHistory.medication}"></td></tr>
+    <tr><th>Weight at Visit</th><td th:text="${report.medicalHistory.weight} + ' kg'"></td></tr>
+</table>
+
+<h2>Latest Vaccination</h2>
+<table>
+    <tr><th>Vaccine</th><td th:text="${report.vaccination.vaccineName}"></td></tr>
+    <tr><th>Vaccinated On</th><td th:text="${#temporals.format(report.vaccination.vaccinationDate, 'yyyy-MM-dd')}"></td></tr>
+    <tr><th>Next Due</th><td th:text="${#temporals.format(report.vaccination.nextDueDate, 'yyyy-MM-dd')}"></td></tr>
+    <tr><th>Dose #</th><td th:text="${report.vaccination.doseNumber}"></td></tr>
+    <tr><th>Veterinarian</th><td th:text="${report.vaccination.veterinarianName}"></td></tr>
+    <tr><th>Status</th><td th:text="${report.vaccination.status}"></td></tr>
+    <tr><th>Notes</th><td th:text="${report.vaccination.notes}"></td></tr>
+</table>
+</body>
+</html>

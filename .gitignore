@@ -33,6 +33,7 @@ build/
 .vscode/
 
 ### Local secrets ###
+node_modules/
 secrets.properties
 .env
 .env.*

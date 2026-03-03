@@ -1,6 +1,7 @@
 package com.petcare.petwellness.Service.ServiceImp;
 
 import com.petcare.petwellness.DTO.Request.AdminCreateOwnerRequestDto;
+import com.petcare.petwellness.DTO.Response.AdminUserProfileResponseDto;
 import com.petcare.petwellness.DTO.Response.ApprovedUserResponseDto;
 import com.petcare.petwellness.DTO.Response.PendingUserResponseDto;
 import com.petcare.petwellness.Domain.Entity.Address;
@@ -16,6 +17,8 @@ import com.petcare.petwellness.Repository.UserRepository;
 import com.petcare.petwellness.Service.AdminService;
 import com.petcare.petwellness.Service.EmailService;
 import com.petcare.petwellness.Util.FileStorageUtil;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,10 +54,13 @@ public class AdminServiceImp implements AdminService {
 
     
     @Override
-    public List<PendingUserResponseDto> getPendingUsers() {
+    public List<PendingUserResponseDto> getPendingUsers(int offset, int limit) {
+        validatePagination(offset, limit);
 
-        List<User> users =
-                userRepository.findByProfileCompletedTrueAndStatus(UserStatus.PENDING);
+        List<User> users = userRepository
+                .findByProfileCompletedTrueAndStatus(UserStatus.PENDING,
+                        PageRequest.of(offset, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .getContent();
 
         return users.stream()
                 .map(user -> new PendingUserResponseDto(
@@ -66,8 +72,12 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
-    public List<ApprovedUserResponseDto> getApprovedUsers() {
-        List<User> users = userRepository.findByRoleAndStatus(UserRole.OWNER, UserStatus.APPROVED);
+    public List<ApprovedUserResponseDto> getApprovedUsers(int offset, int limit) {
+        validatePagination(offset, limit);
+        List<User> users = userRepository
+                .findByRoleAndStatus(UserRole.OWNER, UserStatus.APPROVED,
+                        PageRequest.of(offset, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .getContent();
 
         if (users.isEmpty()) {
             throw new ResourceNotFoundException("No approved user found");
@@ -80,6 +90,40 @@ public class AdminServiceImp implements AdminService {
                         user.getEmail()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public AdminUserProfileResponseDto getUserProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Personal info not found for user"));
+
+        Address address = addressRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found for user"));
+
+        return new AdminUserProfileResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getFirstName(),
+                personalInfo.getPhoneNumber(),
+                personalInfo.getGender(),
+                personalInfo.getHighestQualification(),
+                personalInfo.getOccupation(),
+                personalInfo.getFatherName(),
+                personalInfo.getMotherName(),
+                personalInfo.getDateOfBirth(),
+                address.getStreet(),
+                address.getCity(),
+                address.getState(),
+                address.getPincode(),
+                user.getProfileImagePath(),
+                user.getIdProofType(),
+                user.getIdProofPath(),
+                user.getCreatedAt()
+        );
     }
 
     
@@ -192,9 +236,9 @@ public String deleteApprovedUser(Long userId, String deletionReason, String requ
     return "Approved user deleted successfully and deletion email sent.";
 }
 
-@Override
-@Transactional
-public void createOwner(AdminCreateOwnerRequestDto request, MultipartFile idProof, MultipartFile profileImage) {
+    @Override
+    @Transactional
+    public void createOwner(AdminCreateOwnerRequestDto request, MultipartFile idProof, MultipartFile profileImage) {
 
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
         throw new RuntimeException("User already exists");
@@ -270,6 +314,15 @@ emailService.sendEmail(
 );
 
 }
+
+    private void validatePagination(int offset, int limit) {
+        if (offset < 0) {
+            throw new BadRequestException("Offset must be >= 0");
+        }
+        if (limit <= 0) {
+            throw new BadRequestException("Limit must be > 0");
+        }
+    }
 
 
 }
