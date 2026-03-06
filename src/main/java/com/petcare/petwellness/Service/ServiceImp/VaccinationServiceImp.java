@@ -112,7 +112,7 @@ public class VaccinationServiceImp implements VaccinationService {
         vaccination.setVaccineName(request.getVaccineName().trim());
         vaccination.setVaccinationDate(request.getVaccinationDate());
         vaccination.setNextDueDate(request.getNextDueDate());
-        vaccination.setDoseNumber(request.getDoseNumber());
+        vaccination.setDoseNumber(request.getDoseNumber() != null ? request.getDoseNumber() : 1);
         vaccination.setVeterinarianName(trimToNull(request.getVeterinarianName()));
         vaccination.setNotes(trimToNull(request.getNotes()));
     }

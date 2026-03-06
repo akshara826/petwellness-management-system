@@ -17,7 +17,9 @@ import com.petcare.petwellness.Service.PdfGeneratorService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class HealthReportServiceImp implements HealthReportService {
@@ -67,6 +69,7 @@ public class HealthReportServiceImp implements HealthReportService {
 
         // 5) Calculate Age
         Integer age = calculateAge(pet.getDateOfBirth());
+        String ageDisplay = buildAgeDisplay(pet.getDateOfBirth());
 
         // 6) Map to DTOs
         PetReportDto petDto = new PetReportDto(
@@ -76,6 +79,7 @@ public class HealthReportServiceImp implements HealthReportService {
                 pet.getBreed(),
                 pet.getGender().name(),
                 age,
+                ageDisplay,
                 pet.getWeight()
         );
 
@@ -108,12 +112,33 @@ public class HealthReportServiceImp implements HealthReportService {
 
         // 7) Generate PDF and wrap response
         byte[] pdfBytes = pdfGeneratorService.generateHealthReportPdf(reportDto);
-        String fileName = String.format("health-report-pet-%d.pdf", pet.getId());
+        String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+        String fileName = String.format("health-report-pet-%d-%s.pdf", pet.getId(), stamp);
 
         return new HealthReportPdfDto(pdfBytes, fileName);
     }
 
     private Integer calculateAge(LocalDate dateOfBirth) {
         return Period.between(dateOfBirth, LocalDate.now()).getYears();
+    }
+
+    private String buildAgeDisplay(LocalDate dateOfBirth) {
+        if (dateOfBirth == null) {
+            return "-";
+        }
+
+        Period period = Period.between(dateOfBirth, LocalDate.now());
+        int years = Math.max(period.getYears(), 0);
+        int months = Math.max(period.getMonths(), 0);
+
+        if (years <= 0) {
+            return months + " month" + (months == 1 ? "" : "s");
+        }
+
+        if (months <= 0) {
+            return years + " year" + (years == 1 ? "" : "s");
+        }
+
+        return years + " year" + (years == 1 ? "" : "s") + " " + months + " month" + (months == 1 ? "" : "s");
     }
 }

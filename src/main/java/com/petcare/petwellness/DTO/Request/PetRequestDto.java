@@ -26,14 +26,13 @@ public class PetRequestDto {
     @NotNull
     private PetGender gender;
 
-    @NotBlank
+    @NotNull
     @Past
     private LocalDate dateOfBirth;
 
     @Positive
     private BigDecimal weight;
 
-    @NotBlank
     @NotNull(message = "Pet image is required")
     private MultipartFile image;
 

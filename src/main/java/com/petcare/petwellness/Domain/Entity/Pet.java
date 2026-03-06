@@ -40,7 +40,7 @@ public class Pet {
     private PetGender gender;
 
     @Past
-    @NotBlank
+    @NotNull
     @Column(name = "date_of_birth" ,nullable=false)
     private LocalDate dateOfBirth;
 

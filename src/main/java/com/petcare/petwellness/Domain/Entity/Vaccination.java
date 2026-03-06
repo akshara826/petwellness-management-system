@@ -67,7 +67,7 @@ public class Vaccination {
     private boolean overdueReminderSent=false;
 
 
-    @NotBlank
+    @NotNull
     @Column(name = "dose_number", nullable=false)
     private Integer doseNumber;
 

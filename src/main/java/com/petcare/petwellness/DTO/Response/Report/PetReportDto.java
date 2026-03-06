@@ -10,6 +10,7 @@ public class PetReportDto {
     private String breed;
     private String gender;
     private Integer age;
+    private String ageDisplay;
     private BigDecimal weight;
 
     public PetReportDto(
@@ -19,6 +20,7 @@ public class PetReportDto {
             String breed,
             String gender,
             Integer age,
+            String ageDisplay,
             BigDecimal weight
     ) {
         this.id = id;
@@ -27,6 +29,7 @@ public class PetReportDto {
         this.breed = breed;
         this.gender = gender;
         this.age = age;
+        this.ageDisplay = ageDisplay;
         this.weight = weight;
     }
 
@@ -52,6 +55,10 @@ public class PetReportDto {
 
     public Integer getAge() {
         return age;
+    }
+
+    public String getAgeDisplay() {
+        return ageDisplay;
     }
 
     public BigDecimal getWeight() {

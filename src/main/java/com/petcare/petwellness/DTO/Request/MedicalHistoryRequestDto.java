@@ -41,11 +41,11 @@ public class MedicalHistoryRequestDto {
     @Size(max = 255)
     private String medication;
 
-    @NotBlank
+    @NotNull
     @Positive
     private BigDecimal weight;
 
-    @NotBlank
+    @NotNull(message = "Prescription file is required")
     @Schema(type = "string", format = "binary")
     private MultipartFile prescriptionFile;
 

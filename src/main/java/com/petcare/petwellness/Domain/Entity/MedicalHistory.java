@@ -70,7 +70,7 @@ public class MedicalHistory {
     @Column(length = 255)
     private String medication;
 
-    @NotBlank
+    @NotNull
     @Positive
     @Column(name = "weight_at_visit", precision = 5, scale = 2 , nullable = false)
     private BigDecimal weight;

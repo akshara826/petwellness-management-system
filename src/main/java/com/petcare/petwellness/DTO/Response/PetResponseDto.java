@@ -1,6 +1,7 @@
 package com.petcare.petwellness.DTO.Response;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.petcare.petwellness.Enums.PetGender;
@@ -12,6 +13,7 @@ public class PetResponseDto {
     private String species;
     private String breed;
     private PetGender gender;
+    private LocalDate dateOfBirth;
     private BigDecimal weight;
     private String imageUrl;
     private LocalDateTime createdAt;
@@ -47,6 +49,12 @@ public class PetResponseDto {
     }
     public BigDecimal getWeight() {
         return weight;
+    }
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
     public void setWeight(BigDecimal weight) {
         this.weight = weight;

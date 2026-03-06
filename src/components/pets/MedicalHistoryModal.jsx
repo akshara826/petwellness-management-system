@@ -38,6 +38,7 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
     medication: "",
     nextVisitDate: "",
     prescriptionName: "",
+    prescriptionFile: null,
   });
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -58,8 +59,12 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
     if (!form.visitDate) next.visitDate = "Visit date is required";
     if (form.visitDate && new Date(form.visitDate) > new Date()) next.visitDate = "Cannot be future date";
     if (!form.doctorName.trim()) next.doctorName = "Doctor name is required";
+    if (!form.symptoms.trim()) next.symptoms = "Symptoms is required";
     if (!form.diagnosis.trim()) next.diagnosis = "Diagnosis is required";
+    if (!form.treatment.trim()) next.treatment = "Treatment is required";
+    if (!form.weight) next.weight = "Weight is required";
     if (form.weight && Number(form.weight) <= 0) next.weight = "Must be positive";
+    if (!form.prescriptionFile) next.prescriptionFile = "Prescription file is required";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -75,9 +80,10 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
       diagnosis: form.diagnosis.trim(),
       treatment: form.treatment.trim(),
       medication: form.medication.trim(),
-      weight: form.weight ? Number(form.weight) : null,
+      weight: Number(form.weight),
       nextVisitDate: form.nextVisitDate || "",
       prescriptionName: form.prescriptionName || "",
+      prescriptionFile: form.prescriptionFile,
     });
     setForm({
       visitDate: "",
@@ -90,6 +96,7 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
       medication: "",
       nextVisitDate: "",
       prescriptionName: "",
+      prescriptionFile: null,
     });
     setSavedState(true);
     setTimeout(() => setSavedState(false), 1500);
@@ -163,12 +170,12 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
                 <InputField label="Clinic Name" optional>
                   <input value={form.clinicName} onChange={(event) => setForm((prev) => ({ ...prev, clinicName: event.target.value }))} placeholder="e.g. PawCare Clinic (optional)" className={inputCls} />
                 </InputField>
-                <InputField label="Weight at Visit" optional error={errors.weight}>
+                <InputField label="Weight at Visit" required error={errors.weight}>
                   <input type="number" min="0.1" step="0.1" value={form.weight} onChange={(event) => setForm((prev) => ({ ...prev, weight: event.target.value }))} className={inputCls} />
                 </InputField>
               </div>
 
-              <InputField label="Symptoms" optional>
+              <InputField label="Symptoms" required error={errors.symptoms}>
                 <textarea value={form.symptoms} onChange={(event) => setForm((prev) => ({ ...prev, symptoms: event.target.value }))} placeholder="Describe symptoms observed... (optional)" className={`${inputCls} min-h-[80px] resize-y`} />
               </InputField>
               <InputField label="Diagnosis" required error={errors.diagnosis}>
@@ -176,7 +183,7 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
               </InputField>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <InputField label="Treatment" optional>
+                <InputField label="Treatment" required error={errors.treatment}>
                   <input value={form.treatment} onChange={(event) => setForm((prev) => ({ ...prev, treatment: event.target.value }))} placeholder="Treatment given (optional)" className={inputCls} />
                 </InputField>
                 <InputField label="Medication" optional>
@@ -185,10 +192,21 @@ export default function MedicalHistoryModal({ isOpen, pet, onClose, onSaveRecord
                 <InputField label="Next Visit Date" optional>
                   <input type="date" min={today} value={form.nextVisitDate} onChange={(event) => setForm((prev) => ({ ...prev, nextVisitDate: event.target.value }))} className={inputCls} />
                 </InputField>
-                <InputField label="Prescription" optional>
+                <InputField label="Prescription" required error={errors.prescriptionFile}>
                   <label className="flex cursor-pointer items-center gap-2 rounded-xl border-[1.5px] border-dashed border-app-border bg-app-bg px-3.5 py-2.5 text-sm text-app-slate">
-                    <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => setForm((prev) => ({ ...prev, prescriptionName: event.target.files?.[0]?.name || "" }))} />
-                    📎 {form.prescriptionName || "Upload Prescription (PDF/Image, optional)"}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          prescriptionName: event.target.files?.[0]?.name || "",
+                          prescriptionFile: event.target.files?.[0] || null,
+                        }))
+                      }
+                    />
+                    📎 {form.prescriptionName || "Upload Prescription (PDF/Image)"}
                   </label>
                   <p className="mt-1 text-[11px] text-app-slate">PDF, JPG, PNG · Max 5MB</p>
                 </InputField>

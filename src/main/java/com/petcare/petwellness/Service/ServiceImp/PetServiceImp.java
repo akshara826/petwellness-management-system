@@ -20,7 +20,10 @@ import com.petcare.petwellness.Util.FileStorageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +40,9 @@ public class PetServiceImp implements PetService {
             "application/pdf",
             "application/x-pdf"
     );
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     private final PetRepository petRepository;
     private final UserRepository userRepository;
@@ -205,9 +211,25 @@ public class PetServiceImp implements PetService {
         dto.setSpecies(pet.getSpecies());
         dto.setBreed(pet.getBreed());
         dto.setGender(pet.getGender());
+        dto.setDateOfBirth(pet.getDateOfBirth());
         dto.setWeight(pet.getWeight());
         dto.setCreatedAt(pet.getCreatedAt());
-        dto.setImageUrl(pet.getPetImage());
+        dto.setImageUrl(toPublicFileUrl(pet.getPetImage()));
         return dto;
+    }
+
+    private String toPublicFileUrl(String absolutePath) {
+        if (absolutePath == null || absolutePath.isBlank()) {
+            return null;
+        }
+
+        try {
+            Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = Paths.get(absolutePath).toAbsolutePath().normalize();
+            Path relative = basePath.relativize(filePath);
+            return "/uploads/" + relative.toString().replace("\\", "/");
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 }

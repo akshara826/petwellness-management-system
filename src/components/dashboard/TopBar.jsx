@@ -78,7 +78,7 @@ export default function TopBar({
           </button>
           <div>
             <h1 className="text-2xl font-bold text-app-navy sm:text-3xl">
-              Good morning, <span className="text-app-teal">{userName}</span> {"\uD83C\uDF3F"}
+              Welcome, <span className="text-app-teal">{userName}</span> {"\uD83C\uDF3F"}
             </h1>
             <p className="mt-1 text-sm text-app-slate">{dateText} - {petsCount} pets registered</p>
           </div>
