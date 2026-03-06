@@ -1,4 +1,4 @@
-package com.petcare.petwellness.DTO.Request;
+﻿package com.petcare.petwellness.DTO.Request;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,20 +15,21 @@ import jakarta.validation.constraints.Size;
 
 public class PetUpdateRequestDto {
 
-    @NotBlank
+    
     @Size(max = 50)
     private String name;
 
-    @NotBlank
+    
     @Size(max = 50)
     private String species;
 
     @Size(max = 50)
     private String breed;
 
-    @NotNull
+    
     private PetGender gender;
 
+    
     @Past
     private LocalDate dateOfBirth;
 
@@ -93,3 +94,4 @@ public class PetUpdateRequestDto {
         this.image = image;
     }
 }
+

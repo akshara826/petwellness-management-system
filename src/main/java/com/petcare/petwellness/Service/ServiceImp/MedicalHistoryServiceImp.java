@@ -1,6 +1,7 @@
 package com.petcare.petwellness.Service.ServiceImp;
 
 import com.petcare.petwellness.DTO.Request.MedicalHistoryRequestDto;
+import com.petcare.petwellness.DTO.Request.MedicalHistoryUpdateRequestDto;
 import com.petcare.petwellness.DTO.Response.MedicalHistoryResponseDto;
 import com.petcare.petwellness.Domain.Entity.MedicalHistory;
 import com.petcare.petwellness.Domain.Entity.Pet;
@@ -28,8 +29,8 @@ public class MedicalHistoryServiceImp implements MedicalHistoryService {
     private final FileStorageUtil fileStorageUtil;
 
     public MedicalHistoryServiceImp(MedicalHistoryRepository medicalHistoryRepository,
-                                    PetRepository petRepository,
-                                    FileStorageUtil fileStorageUtil) {
+            PetRepository petRepository,
+            FileStorageUtil fileStorageUtil) {
         this.medicalHistoryRepository = medicalHistoryRepository;
         this.petRepository = petRepository;
         this.fileStorageUtil = fileStorageUtil;
@@ -37,7 +38,8 @@ public class MedicalHistoryServiceImp implements MedicalHistoryService {
 
     @Override
     @Transactional
-    public MedicalHistoryResponseDto addMedicalHistory(Long petId, Long loggedInUserId, MedicalHistoryRequestDto request) {
+    public MedicalHistoryResponseDto addMedicalHistory(Long petId, Long loggedInUserId,
+            MedicalHistoryRequestDto request) {
         Pet pet = getOwnedPetOrThrow(petId, loggedInUserId);
 
         MedicalHistory medicalHistory = new MedicalHistory();
@@ -52,9 +54,10 @@ public class MedicalHistoryServiceImp implements MedicalHistoryService {
         medicalHistory.setWeight(request.getWeight());
         medicalHistory.setNextVisitDate(request.getNextVisitDate());
 
-        if (request.getPrescriptionFile() != null && !request.getPrescriptionFile().isEmpty()) {
-            medicalHistory.setPrescriptionFile(savePrescription(request.getPrescriptionFile()));
+        if (request.getPrescriptionFile() == null || request.getPrescriptionFile().isEmpty()) {
+            throw new BadRequestException("Prescription file is required.");
         }
+        medicalHistory.setPrescriptionFile(savePrescription(request.getPrescriptionFile()));
 
         MedicalHistory saved = medicalHistoryRepository.save(medicalHistory);
         return mapToDto(saved);
@@ -62,7 +65,8 @@ public class MedicalHistoryServiceImp implements MedicalHistoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MedicalHistoryResponseDto> getPetMedicalHistory(Long petId, Long loggedInUserId, int offset, int limit) {
+    public List<MedicalHistoryResponseDto> getPetMedicalHistory(Long petId, Long loggedInUserId, int offset,
+            int limit) {
         validatePagination(offset, limit);
         getOwnedPetOrThrow(petId, loggedInUserId);
         PageRequest pageable = PageRequest.of(offset, limit, Sort.by(Sort.Direction.DESC, "visitDate"));
@@ -74,18 +78,51 @@ public class MedicalHistoryServiceImp implements MedicalHistoryService {
 
     @Override
     @Transactional
-    public MedicalHistoryResponseDto updateMedicalHistory(Long medicalHistoryId, Long loggedInUserId, MedicalHistoryRequestDto request) {
+    public MedicalHistoryResponseDto updateMedicalHistory(Long medicalHistoryId, Long loggedInUserId,
+            MedicalHistoryUpdateRequestDto request) {
         MedicalHistory medicalHistory = getOwnedMedicalHistoryOrThrow(medicalHistoryId, loggedInUserId);
 
-        medicalHistory.setVisitDate(request.getVisitDate());
-        medicalHistory.setDoctorName(request.getDoctorName().trim());
-        medicalHistory.setClinicName(trimToNull(request.getClinicName()));
-        medicalHistory.setSymptoms(trimToNull(request.getSymptoms()));
-        medicalHistory.setDiagnosis(request.getDiagnosis().trim());
-        medicalHistory.setTreatment(trimToNull(request.getTreatment()));
-        medicalHistory.setMedication(trimToNull(request.getMedication()));
-        medicalHistory.setWeight(request.getWeight());
-        medicalHistory.setNextVisitDate(request.getNextVisitDate());
+        
+        if (request.getVisitDate() != null) {
+            medicalHistory.setVisitDate(request.getVisitDate());
+        }
+        String doctorName = trimToNull(request.getDoctorName());
+        if (doctorName != null) {
+            medicalHistory.setDoctorName(doctorName);
+        }
+
+        String clinicName = trimToNull(request.getClinicName());
+        if (clinicName != null) {
+            medicalHistory.setClinicName(clinicName);
+        }
+
+        String symptoms = trimToNull(request.getSymptoms());
+        if (symptoms != null) {
+            medicalHistory.setSymptoms(symptoms);
+        }
+
+        String diagnosis = trimToNull(request.getDiagnosis());
+        if (diagnosis != null) {
+            medicalHistory.setDiagnosis(diagnosis);
+        }
+
+        String treatment = trimToNull(request.getTreatment());
+        if (treatment != null) {
+            medicalHistory.setTreatment(treatment);
+        }
+
+        String medication = trimToNull(request.getMedication());
+        if (medication != null) {
+            medicalHistory.setMedication(medication);
+        }
+
+        if (request.getWeight() != null) {
+            medicalHistory.setWeight(request.getWeight());
+        }
+
+        if (request.getNextVisitDate() != null) {
+            medicalHistory.setNextVisitDate(request.getNextVisitDate());
+        }
 
         MultipartFile prescriptionFile = request.getPrescriptionFile();
         if (prescriptionFile != null && !prescriptionFile.isEmpty()) {

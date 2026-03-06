@@ -1,6 +1,7 @@
 package com.petcare.petwellness.Controller;
 
 import com.petcare.petwellness.DTO.Request.VaccinationRequestDto;
+import com.petcare.petwellness.DTO.Request.VaccinationUpdateRequestDto;
 import com.petcare.petwellness.DTO.Response.VaccinationResponseDto;
 import com.petcare.petwellness.Service.VaccinationService;
 import com.petcare.petwellness.Util.AuthenticatedUserUtil;
@@ -54,7 +55,7 @@ public class VaccinationController {
     public ResponseEntity<VaccinationResponseDto> updateVaccination(
             Authentication authentication,
             @PathVariable Long vaccinationId,
-            @Valid @ModelAttribute VaccinationRequestDto request) {
+            @Valid @ModelAttribute VaccinationUpdateRequestDto request) {
         Long loggedInUserId = authenticatedUserUtil.resolveCurrentUserId(authentication);
         return ResponseEntity.ok(vaccinationService.updateVaccination(vaccinationId, loggedInUserId, request));
     }

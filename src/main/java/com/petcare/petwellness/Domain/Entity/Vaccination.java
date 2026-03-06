@@ -68,6 +68,8 @@ public class Vaccination {
 
 
     @NotNull
+    @jakarta.validation.constraints.Positive
+
     @Column(name = "dose_number", nullable=false)
     private Integer doseNumber;
 
@@ -76,7 +78,8 @@ public class Vaccination {
     private String veterinarianName;
 
     @NotBlank
-    @Column(name = "prescriptionFilePath" , nullable = false)
+    @Size(max = 255)
+    @Column(name = "prescriptionFilePath", nullable = false)
     private String prescriptionFile;
 
     @NotNull

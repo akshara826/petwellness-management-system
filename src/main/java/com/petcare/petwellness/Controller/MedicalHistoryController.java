@@ -1,6 +1,7 @@
 package com.petcare.petwellness.Controller;
 
 import com.petcare.petwellness.DTO.Request.MedicalHistoryRequestDto;
+import com.petcare.petwellness.DTO.Request.MedicalHistoryUpdateRequestDto;
 import com.petcare.petwellness.DTO.Response.MedicalHistoryResponseDto;
 import com.petcare.petwellness.Service.MedicalHistoryService;
 import com.petcare.petwellness.Util.AuthenticatedUserUtil;
@@ -64,7 +65,7 @@ public class MedicalHistoryController {
     public ResponseEntity<MedicalHistoryResponseDto> updateMedicalHistory(
             Authentication authentication,
             @PathVariable Long medicalHistoryId,
-            @Valid @ModelAttribute MedicalHistoryRequestDto request) {
+            @Valid @ModelAttribute MedicalHistoryUpdateRequestDto request) {
         Long loggedInUserId = authenticatedUserUtil.resolveCurrentUserId(authentication);
         return ResponseEntity.ok(
                 medicalHistoryService.updateMedicalHistory(medicalHistoryId, loggedInUserId, request)

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.petcare.petwellness.DTO.Request.VaccinationRequestDto;
+import com.petcare.petwellness.DTO.Request.VaccinationUpdateRequestDto;
 import com.petcare.petwellness.DTO.Response.VaccinationResponseDto;
 import com.petcare.petwellness.Domain.Entity.Pet;
 import com.petcare.petwellness.Domain.Entity.Vaccination;
@@ -53,15 +54,22 @@ public class VaccinationServiceImp implements VaccinationService {
         Pet pet = getOwnedPetOrThrow(petId, loggedInUserId);
 
         Vaccination vaccination = new Vaccination();
+        
         vaccination.setPet(pet);
-        applyRequest(vaccination, request);
-        vaccination.setReminderSent(false);
+        vaccination.setVaccineName (request.getVaccineName().trim());
+        vaccination.setVaccinationDate(request.getVaccinationDate());
+        vaccination.setNextDueDate(request.getNextDueDate());
+        vaccination.setDoseNumber(request.getDoseNumber());
+        vaccination.setVeterinarianName(request.getVeterinarianName().trim());
+        vaccination.setNotes(trimToNull(request.getNotes()));
+        
 
         MultipartFile prescriptionFile = request.getPrescriptionFile();
-        if (prescriptionFile != null && !prescriptionFile.isEmpty()) {
-            validatePrescriptionFile(prescriptionFile);
-            vaccination.setPrescriptionFile(savePrescription(prescriptionFile));
+        if (prescriptionFile == null || prescriptionFile.isEmpty()) {
+            throw new BadRequestException("Prescription file is required.");
         }
+        validatePrescriptionFile(prescriptionFile);
+        vaccination.setPrescriptionFile(savePrescription(prescriptionFile));
 
         Vaccination saved = vaccinationRepository.save(vaccination);
         return mapToDto(saved);
@@ -69,10 +77,38 @@ public class VaccinationServiceImp implements VaccinationService {
 
     @Override
     @Transactional
-    public VaccinationResponseDto updateVaccination(Long vaccinationId, Long loggedInUserId, VaccinationRequestDto request) {
+    public VaccinationResponseDto updateVaccination(Long vaccinationId, Long loggedInUserId, VaccinationUpdateRequestDto request) {
         Vaccination vaccination = getOwnedVaccinationOrThrow(vaccinationId, loggedInUserId);
 
-        applyRequest(vaccination, request);
+         
+
+    String vaccineName = trimToNull(request.getVaccineName());
+    if (vaccineName != null) {
+        vaccination.setVaccineName(vaccineName);
+    }
+
+    if (request.getVaccinationDate() != null) {
+        vaccination.setVaccinationDate(request.getVaccinationDate());
+    }
+
+    if (request.getNextDueDate() != null) {
+        vaccination.setNextDueDate(request.getNextDueDate());
+    }
+
+    if (request.getDoseNumber() != null) {
+        vaccination.setDoseNumber(request.getDoseNumber());
+    }
+
+    String veterinarianName = trimToNull(request.getVeterinarianName());
+    if (veterinarianName != null) {
+        vaccination.setVeterinarianName(veterinarianName);
+    }
+
+    String notes = trimToNull(request.getNotes());
+    if (notes != null) {
+        vaccination.setNotes(notes);
+    }
+
 
         MultipartFile prescriptionFile = request.getPrescriptionFile();
         if (prescriptionFile != null && !prescriptionFile.isEmpty()) {
@@ -107,15 +143,14 @@ public class VaccinationServiceImp implements VaccinationService {
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
-
     private void applyRequest(Vaccination vaccination, VaccinationRequestDto request) {
         vaccination.setVaccineName(request.getVaccineName().trim());
         vaccination.setVaccinationDate(request.getVaccinationDate());
         vaccination.setNextDueDate(request.getNextDueDate());
-        vaccination.setDoseNumber(request.getDoseNumber() != null ? request.getDoseNumber() : 1);
+        vaccination.setDoseNumber(request.getDoseNumber() == null ? 1 : request.getDoseNumber());
         vaccination.setVeterinarianName(trimToNull(request.getVeterinarianName()));
         vaccination.setNotes(trimToNull(request.getNotes()));
-    }
+}
 
     private Pet getOwnedPetOrThrow(Long petId, Long loggedInUserId) {
         Pet pet = petRepository.findById(petId)

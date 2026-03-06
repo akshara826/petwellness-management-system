@@ -1,4 +1,4 @@
-package com.petcare.petwellness.DTO.Request;
+﻿package com.petcare.petwellness.DTO.Request;
 
 
 import java.math.BigDecimal;
@@ -95,3 +95,4 @@ public class PetRequestDto {
     
     
 }
+

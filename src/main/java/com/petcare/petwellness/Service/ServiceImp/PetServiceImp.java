@@ -38,8 +38,7 @@ public class PetServiceImp implements PetService {
             "image/png",
             "image/webp",
             "application/pdf",
-            "application/x-pdf"
-    );
+            "application/x-pdf");
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -51,10 +50,10 @@ public class PetServiceImp implements PetService {
     private final FileStorageUtil fileStorageUtil;
 
     public PetServiceImp(PetRepository petRepository,
-                         UserRepository userRepository,
-                         MedicalHistoryRepository medicalHistoryRepository,
-                         VaccinationRepository vaccinationRepository,
-                         FileStorageUtil fileStorageUtil) {
+            UserRepository userRepository,
+            MedicalHistoryRepository medicalHistoryRepository,
+            VaccinationRepository vaccinationRepository,
+            FileStorageUtil fileStorageUtil) {
         this.petRepository = petRepository;
         this.userRepository = userRepository;
         this.medicalHistoryRepository = medicalHistoryRepository;
@@ -107,17 +106,35 @@ public class PetServiceImp implements PetService {
     public PetResponseDto updatePet(Long petId, PetUpdateRequestDto request, Long userId) {
         Pet pet = getOwnedPetOrThrow(petId, userId);
 
-        String petName = request.getName().trim();
-        if (petRepository.existsByNameAndUserIdAndIdNot(petName, userId, petId)) {
-            throw new BadRequestException("Pet with this name already exists for this user.");
+        String name = trimToNull(request.getName());
+        if (name != null) {
+            if (petRepository.existsByNameAndUserIdAndIdNot(name, userId, petId)) {
+                throw new BadRequestException("Pet with this name already exists for this user.");
+            }
+            pet.setName(name);
         }
 
-        pet.setName(petName);
-        pet.setSpecies(request.getSpecies().trim());
-        pet.setBreed(trimToNull(request.getBreed()));
-        pet.setGender(request.getGender());
-        pet.setDateOfBirth(request.getDateOfBirth());
-        pet.setWeight(request.getWeight());
+        String species = trimToNull(request.getSpecies());
+        if (species != null) {
+            pet.setSpecies(species);
+        }
+
+        String breed = trimToNull(request.getBreed());
+        if (breed != null) {
+            pet.setBreed(breed);
+        }
+
+        if (request.getGender() != null) {
+            pet.setGender(request.getGender());
+        }
+
+        if (request.getDateOfBirth() != null) {
+            pet.setDateOfBirth(request.getDateOfBirth());
+        }
+
+        if (request.getWeight() != null) {
+            pet.setWeight(request.getWeight());
+        }
 
         MultipartFile image = request.getImage();
         if (image != null && !image.isEmpty()) {
@@ -126,7 +143,6 @@ public class PetServiceImp implements PetService {
             pet.setPetImage(saveImage(image));
             fileStorageUtil.deleteFileQuietly(oldImagePath);
         }
-
         Pet savedPet = petRepository.save(pet);
         return mapToDto(savedPet);
     }

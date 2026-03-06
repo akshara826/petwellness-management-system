@@ -77,7 +77,7 @@ public class MedicalHistory {
 
     @NotBlank
     @Size(max = 255)
-    @Column(name = "prescription_file_path", length = 255 ,nullable = false)
+    @Column(name = "prescription_file_path", length = 255, nullable = false)
     private String prescriptionFile;
 
     @Column(name = "next_visit_date")
