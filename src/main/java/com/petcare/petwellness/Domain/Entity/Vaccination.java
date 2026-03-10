@@ -69,6 +69,7 @@ public class Vaccination {
 
     @NotNull
     @jakarta.validation.constraints.Positive
+
     @Column(name = "dose_number", nullable=false)
     private Integer doseNumber;
 

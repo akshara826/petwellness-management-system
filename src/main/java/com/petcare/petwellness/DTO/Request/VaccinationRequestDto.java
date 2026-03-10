@@ -24,6 +24,7 @@ public class VaccinationRequestDto {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate nextDueDate;
 
+    @NotNull
     @Positive
     private Integer doseNumber;
 
@@ -34,7 +35,8 @@ public class VaccinationRequestDto {
     @Size(max = 1000)
     private String notes;
 
-    @NotNull
+    @NotNull(message = "Prescription file is required")
+
     @Schema(type = "string", format = "binary")
     private MultipartFile prescriptionFile;
 
