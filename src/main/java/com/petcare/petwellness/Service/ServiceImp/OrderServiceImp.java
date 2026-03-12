@@ -495,6 +495,13 @@ public class OrderServiceImp implements OrderService {
             return;
         }
 
+        String productSummary = null;
+        try {
+            productSummary = buildProductSummary(order.getId());
+        } catch (Exception ignored) {
+            productSummary = null;
+        }
+
         String email = null;
         try {
             email = order.getUser() != null ? order.getUser().getEmail() : null;
@@ -507,6 +514,7 @@ public class OrderServiceImp implements OrderService {
 
         eventPublisher.publishEvent(new OrderStatusChangedEvent(
                 order.getId(),
+                productSummary,
                 email,
                 previous,
                 next,
@@ -516,5 +524,31 @@ public class OrderServiceImp implements OrderService {
                 order.getShippingPincode(),
                 order.getCancelReason()
         ));
+    }
+
+    private String buildProductSummary(Long orderId) {
+        if (orderId == null) {
+            return null;
+        }
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+        if (items == null || items.isEmpty()) {
+            return null;
+        }
+
+        List<String> names = items.stream()
+                .map(OrderItem::getProductName)
+                .map(this::trimToNull)
+                .filter(name -> name != null)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (names.isEmpty()) {
+            return null;
+        }
+        if (names.size() == 1) {
+            return names.get(0);
+        }
+
+        return names.get(0) + " and " + (names.size() - 1) + " more item(s)";
     }
 }

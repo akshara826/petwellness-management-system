@@ -76,28 +76,38 @@ public class OrderEmailNotificationListener {
     }
 
     private String buildSubject(OrderStatusChangedEvent event) {
-        Long orderId = event.getOrderId();
         OrderStatus status = event.getNewStatus();
-        String id = orderId != null ? orderId.toString() : "";
+        String product = trimToNull(event.getProductSummary());
 
         if (status == OrderStatus.PAID) {
-            return "Order #" + id + " confirmed";
+            return product != null ? "Order confirmed: " + product : "Order confirmed";
         }
         if (status == OrderStatus.CANCELLED) {
-            return "Order #" + id + " cancelled";
+            return product != null ? "Order cancelled: " + product : "Order cancelled";
         }
-        return "Order #" + id + " status updated: " + status;
+        return product != null
+                ? "Order update (" + status + "): " + product
+                : "Order status updated: " + status;
     }
 
     private String buildBody(OrderStatusChangedEvent event) {
         StringBuilder body = new StringBuilder();
+        String product = trimToNull(event.getProductSummary());
 
         body.append("Hello,\n\n");
         if (event.getNewStatus() == OrderStatus.PAID) {
-            body.append("Your order #").append(event.getOrderId()).append(" is confirmed.\n");
+            body.append("Your order");
+            if (product != null) {
+                body.append(" for ").append(product);
+            }
+            body.append(" is confirmed.\n");
             body.append("We have received your order.\n");
         } else {
-            body.append("Your order #").append(event.getOrderId()).append(" status is now ").append(event.getNewStatus()).append(".\n");
+            body.append("Your order");
+            if (product != null) {
+                body.append(" for ").append(product);
+            }
+            body.append(" status is now ").append(event.getNewStatus()).append(".\n");
         }
 
         if (event.getNewStatus() == OrderStatus.PAID) {

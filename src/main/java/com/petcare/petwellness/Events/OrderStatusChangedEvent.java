@@ -7,6 +7,7 @@ import com.petcare.petwellness.Enums.OrderStatus;
 public class OrderStatusChangedEvent {
 
     private final Long orderId;
+    private final String productSummary;
     private final String recipientEmail;
     private final OrderStatus previousStatus;
     private final OrderStatus newStatus;
@@ -18,6 +19,7 @@ public class OrderStatusChangedEvent {
 
     public OrderStatusChangedEvent(
             Long orderId,
+            String productSummary,
             String recipientEmail,
             OrderStatus previousStatus,
             OrderStatus newStatus,
@@ -27,6 +29,7 @@ public class OrderStatusChangedEvent {
             String shippingPincode,
             String cancelReason) {
         this.orderId = orderId;
+        this.productSummary = productSummary;
         this.recipientEmail = recipientEmail;
         this.previousStatus = previousStatus;
         this.newStatus = newStatus;
@@ -39,6 +42,10 @@ public class OrderStatusChangedEvent {
 
     public Long getOrderId() {
         return orderId;
+    }
+
+    public String getProductSummary() {
+        return productSummary;
     }
 
     public String getRecipientEmail() {
@@ -73,4 +80,3 @@ public class OrderStatusChangedEvent {
         return cancelReason;
     }
 }
-
