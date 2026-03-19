@@ -1,0 +1,87 @@
+.razorpay-test {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0f2fe, #eff6ff);
+  padding: 24px;
+}
+
+.razorpay-card {
+  width: min(520px, 100%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  display: grid;
+  gap: 16px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.razorpay-card h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.razorpay-subtitle {
+  margin: 0;
+  color: #475569;
+}
+
+.razorpay-card label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.razorpay-card input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  font-size: 0.95rem;
+}
+
+.razorpay-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.razorpay-actions button {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.razorpay-actions button.secondary {
+  background: #0f172a;
+}
+
+.razorpay-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.razorpay-order {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.razorpay-status {
+  padding: 12px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.9rem;
+}
