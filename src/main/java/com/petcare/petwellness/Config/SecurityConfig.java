@@ -39,24 +39,36 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/uploads/**"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                         .requestMatchers(
-                                 "/api/auth/send-otp",
-                                 "/api/auth/verify-otp",
+                         ).permitAll()
+                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                          .requestMatchers(
+                                  "/api/auth/send-otp",
+                                  "/api/auth/verify-otp",
                                  "/api/auth/registration",
                                  "/api/auth/login",
                                  "/api/auth/forgot-password/send-otp",
                                  "/api/auth/forgot-password/reset",
                                  "/api/test/reminders/vaccination/run"
-                         ).permitAll()
-                        .requestMatchers("/api/auth/set-password").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                          ).permitAll()
+                         .requestMatchers(HttpMethod.POST, "/api/auth/set-password").hasRole("OWNER")
+                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                         .requestMatchers(
+                                 "/api/vaccinations/**",
+                                 "/api/pets/**",
+                                 "/api/medical-history/**",
+                                 "/api/cart/**",
+                                 "/api/orders/**",
+                                 "/api/appointments/**",
+                                 "/api/profile/**",
+                                 "/api/reports/**",
+                                 "/api/user/**",
+                                 "/api/orders/**"
+                         ).hasRole("OWNER")
+                         .anyRequest().authenticated()
+                 )
+                 .exceptionHandling(ex -> ex
+                         .authenticationEntryPoint((request, response, authException) -> {
+                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             response.getWriter().write("{\"message\":\"Unauthorized\",\"status\":401}");
                         })

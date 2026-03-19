@@ -124,6 +124,21 @@ public class VaccinationServiceImp implements VaccinationService {
 
     @Override
     @Transactional
+    public VaccinationResponseDto markVaccinationCompleted(Long vaccinationId, Long loggedInUserId) {
+        Vaccination vaccination = getOwnedVaccinationOrThrow(vaccinationId, loggedInUserId);
+
+        try {
+            vaccination.markAsCompleted();
+        } catch (IllegalStateException ex) {
+            throw new BadRequestException(ex.getMessage());
+        }
+
+        Vaccination saved = vaccinationRepository.save(vaccination);
+        return mapToDto(saved);
+    }
+
+    @Override
+    @Transactional
     public String deleteVaccination(Long vaccinationId, Long loggedInUserId) {
         Vaccination vaccination = getOwnedVaccinationOrThrow(vaccinationId, loggedInUserId);
         fileStorageUtil.deleteFileQuietly(vaccination.getPrescriptionFile());

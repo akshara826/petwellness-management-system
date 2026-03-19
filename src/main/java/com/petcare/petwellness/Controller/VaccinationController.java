@@ -57,6 +57,15 @@ public class VaccinationController {
         return ResponseEntity.ok(vaccinationService.updateVaccination(vaccinationId, loggedInUserId, request));
     }
 
+    @Operation(summary = "Mark vaccination as completed for a pet owned by logged-in user")
+    @PostMapping("/{vaccinationId}/complete")
+    public ResponseEntity<VaccinationResponseDto> markVaccinationCompleted(
+            Authentication authentication,
+            @PathVariable Long vaccinationId) {
+        Long loggedInUserId = authenticatedUserUtil.resolveCurrentUserId(authentication);
+        return ResponseEntity.ok(vaccinationService.markVaccinationCompleted(vaccinationId, loggedInUserId));
+    }
+
     @Operation(summary = "Delete vaccination record owned by logged-in user")
     @DeleteMapping("/delete/{vaccinationId}")
     public ResponseEntity<String> deleteVaccination(

@@ -1,11 +1,13 @@
 package com.petcare.petwellness.Service.ServiceImp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,12 @@ public class AppointmentServiceImp implements AppointmentService {
     private final PetRepository petRepository;
     private final EmailService emailService;
 
+    @Value("${appointments.admin.same-day-min-lead-minutes:60}")
+    private long adminSameDayMinLeadMinutes;
+
+    @Value("${appointments.user.cancel-min-lead-minutes:240}")
+    private long userCancelMinLeadMinutes;
+
     public AppointmentServiceImp(AppointmentRepository appointmentRepository,
             UserRepository userRepository,
             PetRepository petRepository,
@@ -53,6 +61,7 @@ public class AppointmentServiceImp implements AppointmentService {
         LocalTime endTime = request.getEndTime();
 
         validateTimeRange(startTime, endTime);
+        validateAdminSlotTiming(appointmentDate, startTime);
 
         if (appointmentRepository.existsByAppointmentDateAndStartTime(appointmentDate, startTime)) {
             throw new BadRequestException("Appointment slot already exists for this date and start time");
@@ -82,6 +91,7 @@ public class AppointmentServiceImp implements AppointmentService {
         LocalTime nextEnd = request.getEndTime() != null ? request.getEndTime() : appointment.getEndTime();
 
         validateTimeRange(nextStart, nextEnd);
+        validateAdminSlotTiming(nextDate, nextStart);
 
         boolean slotChanged = !nextDate.equals(appointment.getAppointmentDate())
                 || !nextStart.equals(appointment.getStartTime());
@@ -166,13 +176,15 @@ public class AppointmentServiceImp implements AppointmentService {
     public List<AppointmentResponseDto> getAvailableAppointments(int offset, int limit) {
         validatePagination(offset, limit);
 
+        LocalDate today = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
         PageRequest pageable = PageRequest.of(
                 offset,
                 limit,
                 Sort.by(Sort.Direction.ASC, "appointmentDate").and(Sort.by(Sort.Direction.ASC, "startTime"))
         );
 
-        return appointmentRepository.findByStatus(AppointmentStatus.AVAILABLE, pageable)
+        return appointmentRepository.findFutureByStatus(AppointmentStatus.AVAILABLE, today, nowTime, pageable)
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
@@ -238,6 +250,38 @@ public class AppointmentServiceImp implements AppointmentService {
         return mapToDto(saved);
     }
 
+    @Override
+    @Transactional
+    public AppointmentResponseDto cancelAppointment(Long appointmentId, Long userId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+
+        if (appointment.getStatus() != AppointmentStatus.BOOKED) {
+            throw new BadRequestException("Only booked appointments can be cancelled");
+        }
+
+        User bookedUser = appointment.getUser();
+        if (bookedUser == null || bookedUser.getId() == null) {
+            throw new BadRequestException("Appointment is not booked");
+        }
+
+        if (!bookedUser.getId().equals(userId)) {
+            throw new UnauthorizedException("You are not authorized to cancel this appointment");
+        }
+
+        validateCancelableTiming(appointment);
+
+        Pet bookedPet = appointment.getPet();
+
+        appointment.setUser(null);
+        appointment.setPet(null);
+        appointment.setStatus(AppointmentStatus.AVAILABLE);
+
+        Appointment saved = appointmentRepository.save(appointment);
+        sendCancellationEmail(bookedUser, bookedPet, saved);
+        return mapToDto(saved);
+    }
+
     private AppointmentResponseDto mapToDto(Appointment appointment) {
         AppointmentResponseDto dto = new AppointmentResponseDto();
         dto.setId(appointment.getId());
@@ -279,6 +323,49 @@ public class AppointmentServiceImp implements AppointmentService {
         }
     }
 
+    private void validateAdminSlotTiming(LocalDate appointmentDate, LocalTime startTime) {
+        if (appointmentDate == null || startTime == null) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        if (appointmentDate.isBefore(today)) {
+            throw new BadRequestException("Appointment date must not be in the past");
+        }
+
+        if (appointmentDate.isEqual(today)) {
+            LocalDateTime slotStart = LocalDateTime.of(appointmentDate, startTime);
+            LocalDateTime minStart = LocalDateTime.now().plusMinutes(adminSameDayMinLeadMinutes);
+            if (slotStart.isBefore(minStart)) {
+                throw new BadRequestException("Same-day appointment start time must be at least 1 hour from now");
+            }
+        }
+    }
+
+    private void validateCancelableTiming(Appointment appointment) {
+        LocalDate appointmentDate = appointment.getAppointmentDate();
+        LocalTime startTime = appointment.getStartTime();
+        if (appointmentDate == null || startTime == null) {
+            throw new BadRequestException("Invalid appointment timing");
+        }
+
+        LocalDateTime slotStart = LocalDateTime.of(appointmentDate, startTime);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (!slotStart.isAfter(now)) {
+            throw new BadRequestException("Cannot cancel a past or ongoing appointment");
+        }
+
+        LocalDateTime minStart = now.plusMinutes(userCancelMinLeadMinutes);
+        if (slotStart.isBefore(minStart)) {
+            long hours = userCancelMinLeadMinutes / 60;
+            if (userCancelMinLeadMinutes % 60 == 0 && hours > 0) {
+                throw new BadRequestException("Appointments can only be cancelled at least " + hours + " hours before start time");
+            }
+            throw new BadRequestException("Appointments can only be cancelled at least " + userCancelMinLeadMinutes + " minutes before start time");
+        }
+    }
+
     private void sendBookingConfirmationEmail(User user, Pet pet, Appointment appointment) {
         String recipient = user.getEmail();
         if (recipient == null || recipient.isBlank()) {
@@ -307,6 +394,39 @@ public class AppointmentServiceImp implements AppointmentService {
                 + "Type: " + appointment.getAppointmentType() + "\n"
                 + "Pet: " + (pet != null ? pet.getName() : "N/A") + "\n\n"
                 + "If you need to reschedule or cancel, please contact support.\n\n"
+                + "Thank you,\nPet Wellness Team";
+
+        emailService.sendEmail(recipient, subject, body);
+    }
+
+    private void sendCancellationEmail(User user, Pet pet, Appointment appointment) {
+        String recipient = user.getEmail();
+        if (recipient == null || recipient.isBlank()) {
+            return;
+        }
+
+        String greetingName = trimToNull(user.getFirstName());
+        if (greetingName == null) {
+            greetingName = trimToNull(user.getFullName());
+        }
+        if (greetingName == null) {
+            greetingName = "there";
+        }
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        String subject = "Appointment Cancelled - Pet Wellness";
+        String body = "Hi " + greetingName + ",\n\n"
+                + "Your appointment has been cancelled successfully.\n\n"
+                + "Appointment ID: " + appointment.getId() + "\n"
+                + "Date: " + appointment.getAppointmentDate().format(dateFormatter) + "\n"
+                + "Time: " + appointment.getStartTime().format(timeFormatter)
+                + " - " + appointment.getEndTime().format(timeFormatter) + "\n"
+                + "Veterinarian: " + appointment.getVeterinarianName() + "\n"
+                + "Type: " + appointment.getAppointmentType() + "\n"
+                + "Pet: " + (pet != null ? pet.getName() : "N/A") + "\n\n"
+                + "You can book another slot anytime from the app.\n\n"
                 + "Thank you,\nPet Wellness Team";
 
         emailService.sendEmail(recipient, subject, body);

@@ -44,6 +44,14 @@ public class AppointmentController {
         );
     }
 
+    @PostMapping("/{appointmentId}/cancel")
+    public ResponseEntity<AppointmentResponseDto> cancelAppointment(
+            Authentication authentication,
+            @PathVariable Long appointmentId) {
+        Long userId = authenticatedUserUtil.resolveCurrentUserId(authentication);
+        return ResponseEntity.ok(appointmentService.cancelAppointment(appointmentId, userId));
+    }
+
     @GetMapping("/available")
     public ResponseEntity<List<AppointmentResponseDto>> getAvailableAppointments(
             @RequestParam(defaultValue = "0") int offset,

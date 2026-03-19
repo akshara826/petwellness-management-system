@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.petcare.petwellness.DTO.Request.CartItemAddRequestDto;
@@ -41,9 +42,12 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CartResponseDto> getCart(Authentication authentication) {
+    public ResponseEntity<CartResponseDto> getCart(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit) {
         Long userId = authenticatedUserUtil.resolveCurrentUserId(authentication);
-        return ResponseEntity.ok(cartService.getCart(userId));
+        return ResponseEntity.ok(cartService.getCart(userId, offset, limit));
     }
 
     @PostMapping("/items")

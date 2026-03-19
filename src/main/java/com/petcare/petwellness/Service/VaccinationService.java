@@ -12,6 +12,8 @@ public interface VaccinationService {
 
     VaccinationResponseDto updateVaccination(Long vaccinationId, Long loggedInUserId, VaccinationUpdateRequestDto request);
 
+    VaccinationResponseDto markVaccinationCompleted(Long vaccinationId, Long loggedInUserId);
+
     String deleteVaccination(Long vaccinationId, Long loggedInUserId);
 
     List<VaccinationResponseDto> getPetVaccinations(Long petId, Long loggedInUserId, int offset, int limit);

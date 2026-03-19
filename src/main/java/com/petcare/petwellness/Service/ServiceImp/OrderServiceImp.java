@@ -145,13 +145,27 @@ public class OrderServiceImp implements OrderService {
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
-            throw new BadRequestException("Only pending orders can be cancelled");
+        OrderStatus status = order.getStatus();
+        if (status == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Order is already cancelled");
+        }
+        if (status == OrderStatus.DELIVERED || status == OrderStatus.FAILED) {
+            throw new BadRequestException("Delivered or failed orders cannot be cancelled");
+        }
+        if (status != OrderStatus.PENDING_PAYMENT
+                && status != OrderStatus.PAID
+                && status != OrderStatus.PROCESSING
+                && status != OrderStatus.SHIPPED) {
+            throw new BadRequestException("Order cannot be cancelled at its current status");
         }
 
         String reason = trimToNull(request != null ? request.getReason() : null);
         order.setCancelReason(reason);
         order.setStatus(OrderStatus.CANCELLED);
+
+        if (status == OrderStatus.PAID || status == OrderStatus.PROCESSING) {
+            restoreStock(order);
+        }
 
         Order saved = orderRepository.save(order);
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);

@@ -25,4 +25,6 @@ public interface AppointmentService {
     String deleteAppointment(Long appointmentId);
 
     AppointmentResponseDto bookAppointment(Long appointmentId, Long petId, Long userId);
+
+    AppointmentResponseDto cancelAppointment(Long appointmentId, Long userId);
 }

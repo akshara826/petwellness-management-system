@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +52,17 @@ public class CartServiceImp implements CartService {
             return new CartResponseDto();
         }
         return mapToCartResponse(cart);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CartResponseDto getCart(Long userId, int offset, int limit) {
+        validatePagination(offset, limit);
+        Cart cart = cartRepository.findByUserId(userId).orElse(null);
+        if (cart == null) {
+            return new CartResponseDto();
+        }
+        return mapToCartResponse(cart, offset, limit);
     }
 
     @Override
@@ -177,6 +190,25 @@ public class CartServiceImp implements CartService {
         return response;
     }
 
+    private CartResponseDto mapToCartResponse(Cart cart, int offset, int limit) {
+        PageRequest pageable = PageRequest.of(offset, limit, Sort.by(Sort.Direction.DESC, "id"));
+        List<CartItemResponseDto> itemDtos = cartItemRepository.findByCartId(cart.getId(), pageable)
+                .getContent()
+                .stream()
+                .map(this::mapToCartItem)
+                .collect(Collectors.toList());
+
+        BigDecimal total = cartItemRepository.sumCartTotal(cart.getId());
+        if (total == null) {
+            total = BigDecimal.ZERO;
+        }
+
+        CartResponseDto response = new CartResponseDto();
+        response.setItems(itemDtos);
+        response.setTotalAmount(total);
+        return response;
+    }
+
     private CartItemResponseDto mapToCartItem(CartItem item) {
         Product product = item.getProduct();
         BigDecimal price = product.getPrice();
@@ -192,5 +224,14 @@ public class CartServiceImp implements CartService {
         dto.setLineTotal(lineTotal);
         dto.setStatus(product.getStatus());
         return dto;
+    }
+
+    private void validatePagination(int offset, int limit) {
+        if (offset < 0) {
+            throw new BadRequestException("Offset must be >= 0");
+        }
+        if (limit <= 0) {
+            throw new BadRequestException("Limit must be > 0");
+        }
     }
 }

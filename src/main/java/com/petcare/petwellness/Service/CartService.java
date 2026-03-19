@@ -8,6 +8,8 @@ public interface CartService {
 
     CartResponseDto getCart(Long userId);
 
+    CartResponseDto getCart(Long userId, int offset, int limit);
+
     CartResponseDto addItem(Long userId, CartItemAddRequestDto request);
 
     CartResponseDto updateItem(Long userId, Long itemId, CartItemUpdateRequestDto request);
