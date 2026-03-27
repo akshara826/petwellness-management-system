@@ -1,0 +1,82 @@
+server:
+  port: 8080
+  tomcat:
+    max-part-count: 50
+
+spring:
+  config:
+    import: optional:file:./secrets.properties
+
+  application:
+    name: petwellnessdb
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/petwellnessdb}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 25MB
+      max-request-size: 35MB
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:dev@example.com}
+    password: ${MAIL_PASSWORD:dev-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  web:
+    error:
+      include-exception: true
+      include-stacktrace: always
+      include-binding-errors: always
+      include-message: always
+
+file:
+  upload-dir: ${user.home}/petwellness/uploads
+
+jwt:
+  secret: ${JWT_SECRET:dev-jwt-secret-key-256-bits-minimum-length}
+  expiration: 86400000
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:}
+  key-secret: ${RAZORPAY_KEY_SECRET:}
+  api-base: ${RAZORPAY_API_BASE:https://api.razorpay.com/v1}
+  reconcile:
+    enabled: ${RAZORPAY_RECONCILE_ENABLED:false}
+    delay-ms: ${RAZORPAY_RECONCILE_DELAY_MS:600000}
+    batch-size: ${RAZORPAY_RECONCILE_BATCH_SIZE:10}
+    min-age-minutes: ${RAZORPAY_RECONCILE_MIN_AGE_MINUTES:10}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.web.servlet.PageNotFound: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
+    com.petcare.petwellness: DEBUG
