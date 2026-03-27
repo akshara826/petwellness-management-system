@@ -33,21 +33,33 @@ export function CartProvider({ children }) {
   }, []);
 
   const addItem = useCallback(async (productId, quantity = 1) => {
-    const nextCart = await addToCart(productId, quantity);
-    setCart(nextCart);
-    return nextCart;
+    try {
+      const nextCart = await addToCart(productId, quantity);
+      setCart(nextCart);
+      return nextCart;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   }, []);
 
   const updateItem = useCallback(async (itemId, quantity) => {
-    const nextCart = await updateCartItem(itemId, quantity);
-    setCart(nextCart);
-    return nextCart;
+    try {
+      const nextCart = await updateCartItem(itemId, quantity);
+      setCart(nextCart);
+      return nextCart;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   }, []);
 
   const removeItem = useCallback(async (itemId) => {
-    const nextCart = await removeCartItem(itemId);
-    setCart(nextCart);
-    return nextCart;
+    try {
+      const nextCart = await removeCartItem(itemId);
+      setCart(nextCart);
+      return nextCart;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   }, []);
 
   const clearCartState = useCallback(() => {

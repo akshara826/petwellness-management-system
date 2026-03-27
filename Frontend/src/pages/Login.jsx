@@ -67,6 +67,7 @@ function getNameFromToken(token) {
 function Login() {
   const navigate = useNavigate();
 
+  const [selectedRole, setSelectedRole] = useState("PET_OWNER");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -140,6 +141,27 @@ function Login() {
         <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900">
           Login to PetCare
         </h1>
+
+        <div className="role-toggle" aria-label="Select login role" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={selectedRole === "PET_OWNER"}
+            className={`role-toggle-option ${selectedRole === "PET_OWNER" ? "active" : ""}`}
+            onClick={() => setSelectedRole("PET_OWNER")}
+          >
+            Pet Owner
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={selectedRole === "ADMIN"}
+            className={`role-toggle-option ${selectedRole === "ADMIN" ? "active" : ""}`}
+            onClick={() => setSelectedRole("ADMIN")}
+          >
+            Admin
+          </button>
+        </div>
 
         {error ? <p className="status-message status-error">{error}</p> : null}
         {success ? <p className="status-message status-success">{success}</p> : null}
